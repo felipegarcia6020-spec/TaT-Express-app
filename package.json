@@ -4,6 +4,8 @@
   "description": "Aplicación móvil para la entrega de mercancía Tienda a Tienda (TaT) con mapas interactivos, cierres de caja y monitoreo.",
   "main": "www/index.html",
   "scripts": {
+    "test": "echo \"Error: no test specified\" and exit 1",
+    "icon": "npx @capacitor/assets generate --icon resources/icon.png",
     "build": "mkdir -p www && cp index.html www/index.html",
     "cap:add:android": "npm run build && npx cap add android",
     "cap:add:ios": "npm run build && npx cap add ios",
@@ -27,5 +29,8 @@
     "@capacitor/core": "^5.7.0",
     "@capacitor/geolocation": "^5.0.0",
     "@capacitor/ios": "^5.7.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0"
   }
 }

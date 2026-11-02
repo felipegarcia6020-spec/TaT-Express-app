@@ -19,22 +19,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
-            tailwind.config = {
-              darkMode: 'class',
-              theme: {
-                extend: {
-                  fontFamily: { sans: ['Inter', 'sans-serif'] },
-                  colors: {
-                    brand: {
-                      50: '#eef2ff',
-                      500: '#6366f1',
-                      600: '#4f46e5',
-                      700: '#4338ca',
+                tailwind.config = {
+                  darkMode: 'class',
+                  theme: {
+                    extend: {
+                      fontFamily: { sans: ['Inter', 'sans-serif'] },
+                      colors: {
+                        brand: {
+                          50: '#eef2ff',
+                          500: '#6366f1',
+                          600: '#4f46e5',
+                          700: '#4338ca',
+                        }
+                      }
                     }
                   }
                 }
-              }
-            }
     </script>
 
     <style>
@@ -153,18 +153,16 @@
         <!-- MAIN DYNAMIC CONTENT AREA -->
         <main class="flex-1 relative overflow-hidden bg-slate-950">
 
-            <!-- VIEW 1: INTERACTIVE MAP (DRIVER MAIN VIEW) -->
+            <!-- VIEW 1: INTERACTIVE MAP -->
             <section id="view-map" class="w-full h-full relative">
                 <div id="map" class="w-full h-full z-0"></div>
 
-                <!-- FAB: Add Pin by Tap Mode Info Overlay -->
                 <div id="pin-mode-banner" class="hidden absolute top-3 left-1/2 -translate-x-1/2 bg-amber-500/90 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-full shadow-lg z-10 flex items-center gap-2 border border-amber-300 backdrop-blur animate-pulse">
                     <i data-lucide="map-pin" class="w-4 h-4"></i>
                     Toca en cualquier parte del mapa para crear parada
                     <button onclick="togglePinMode(false)" class="ml-1 bg-slate-900 text-white rounded-full p-0.5"><i data-lucide="x" class="w-3 h-3"></i></button>
                 </div>
 
-                <!-- Floating Action Buttons on Map -->
                 <div class="absolute bottom-4 right-4 flex flex-col gap-2 z-10">
                     <button onclick="recenterMapToUser()" title="Ubicación Actual" class="p-3 bg-slate-800/90 text-brand-400 rounded-full border border-slate-700 shadow-xl backdrop-blur hover:bg-slate-700 active:scale-95 transition">
                         <i data-lucide="crosshair" class="w-5 h-5"></i>
@@ -174,7 +172,6 @@
                     </button>
                 </div>
 
-                <!-- Bottom Sheet Summary on Map -->
                 <div class="absolute bottom-4 left-4 right-16 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-2xl p-3 shadow-xl z-10 flex justify-around items-center text-center">
                     <div>
                         <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Paradas</p>
@@ -193,7 +190,7 @@
                 </div>
             </section>
 
-            <!-- VIEW 2: ROUTES MANAGEMENT TAB -->
+            <!-- VIEW 2: ROUTES MANAGEMENT -->
             <section id="view-routes" class="w-full h-full hidden overflow-y-auto p-4 space-y-4 no-scrollbar pb-24">
                 <div class="flex justify-between items-center">
                     <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
@@ -209,9 +206,7 @@
                     <span id="route-limit-badge" class="font-mono bg-slate-800 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-700">1 / 5 Rutas | Max 30 paradas</span>
                 </div>
 
-                <div id="routes-list" class="space-y-3">
-                    <!-- Dynamically Populated Routes -->
-                </div>
+                <div id="routes-list" class="space-y-3"></div>
             </section>
 
             <!-- VIEW 3: BALANCE & CIERRE DE CAJA -->
@@ -224,40 +219,10 @@
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex flex-col">
                         <span class="text-[11px] text-slate-400 font-medium">Recaudo Estimado</span>
                         <span id="stat-total-expected" class="text-lg font-extrabold text-emerald-400 mt-1">$0</span>
-                        <span class="text-[10px] text-slate-500 mt-1">Sumatoria de Entregas</span>
                     </div>
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex flex-col">
                         <span class="text-[11px] text-slate-400 font-medium">Efectivo Físico Arqueado</span>
                         <span id="stat-total-cash-counted" class="text-lg font-extrabold text-brand-400 mt-1">$0</span>
-                        <span id="stat-cash-diff" class="text-[10px] text-slate-400 mt-1">Diferencia: $0</span>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-2">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Resumen de Métodos de Pago</h3>
-                    <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                        <div class="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                            <span class="block text-slate-400 text-[10px]">Efectivo</span>
-                            <span id="pay-cash-total" class="font-semibold text-emerald-400">$0</span>
-                        </div>
-                        <div class="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                            <span class="block text-slate-400 text-[10px]">Nequi / Davi</span>
-                            <span id="pay-transfer-total" class="font-semibold text-purple-400">$0</span>
-                        </div>
-                        <div class="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                            <span class="block text-slate-400 text-[10px]">Llave Breve</span>
-                            <span id="pay-breve-total" class="font-semibold text-blue-400">$0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Gastos de Ruta</h3>
-                        <button onclick="addExpenseRow()" class="text-xs text-brand-400 hover:text-brand-300 font-medium">+ Agregar Gasto</button>
-                    </div>
-                    <div id="expenses-list" class="space-y-2">
-                        <!-- Expenses rows -->
                     </div>
                 </div>
 
@@ -272,9 +237,7 @@
                                     <th class="p-2 text-right">Subtotal</th>
                                 </tr>
                             </thead>
-                            <tbody id="denom-table-body" class="divide-y divide-slate-800/50">
-                                <!-- Injected dynamically -->
-                            </tbody>
+                            <tbody id="denom-table-body" class="divide-y divide-slate-800/50"></tbody>
                         </table>
                     </div>
                     <button onclick="finalizeCashClosing()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg mt-2">
@@ -288,14 +251,6 @@
                 <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
                     <i data-lucide="shield-check" class="w-5 h-5 text-indigo-400"></i> Panel de Control Supervisor
                 </h2>
-
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-3">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Conductores & Rutas Activas</h3>
-                    <div id="drivers-supervisor-list" class="space-y-2">
-                        <!-- Dynamically populated drivers -->
-                    </div>
-                </div>
-
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-2">
                     <h3 class="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center gap-1.5">
                         <i data-lucide="bell-ring" class="w-4 h-4"></i> Centro de Alertas de Emergencia SOS
@@ -306,38 +261,22 @@
                 </div>
             </section>
 
-            <!-- VIEW 5: ISOLATED GM MASTER ADMIN PANEL -->
+            <!-- VIEW 5: GM MASTER ADMIN PANEL -->
             <section id="view-gm" class="w-full h-full hidden overflow-y-auto p-4 space-y-4 no-scrollbar pb-24">
                 <div class="bg-slate-900/90 border border-purple-800/80 rounded-2xl p-4 space-y-4 relative overflow-hidden shadow-2xl">
-                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-600/10 rounded-full blur-2xl"></div>
                     <div class="flex items-center justify-between border-b border-purple-900/60 pb-3">
                         <h2 class="text-sm font-extrabold text-purple-400 uppercase tracking-wider flex items-center gap-2">
                             <i data-lucide="sparkles" class="w-5 h-5"></i> Panel de Control Master GM
                         </h2>
                         <span class="text-[10px] bg-purple-950 text-purple-300 border border-purple-700 px-2 py-0.5 rounded-full font-mono">ACCESO PRIVILEGIADO</span>
                     </div>
-
-                    <p class="text-xs text-slate-400">Este panel es totalmente independiente y solo es visible para el administrador GM.</p>
-
                     <div class="space-y-3 text-xs">
                         <label class="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-purple-900/40 cursor-pointer">
-                            <div class="pr-2">
-                                <span class="text-slate-200 font-semibold block">Desactivar Bomba de Tiempo</span>
-                                <span class="text-[10px] text-slate-500">Elimina el límite de 3 días de prueba</span>
-                            </div>
-                            <input type="checkbox" id="gm-toggle-timer" onchange="toggleGMBypassTimer(this.checked)" class="w-5 h-5 accent-purple-600 rounded">
+                            <span class="text-slate-200 font-semibold">Desactivar Bomba de Tiempo</span>
+                            <input type="checkbox" id="gm-toggle-timer" class="w-5 h-5 accent-purple-600 rounded">
                         </label>
-
-                        <label class="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-purple-900/40 cursor-pointer">
-                            <div class="pr-2">
-                                <span class="text-slate-200 font-semibold block">Desbloquear Límites Operativos</span>
-                                <span class="text-[10px] text-slate-500">Permite rutas infinitas y paradas ilimitadas</span>
-                            </div>
-                            <input type="checkbox" id="gm-toggle-limits" onchange="toggleGMBypassLimits(this.checked)" class="w-5 h-5 accent-purple-600 rounded">
-                        </label>
-
-                        <button onclick="resetAppDemoData()" class="w-full bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-200 py-3 rounded-xl font-bold text-xs transition shadow-lg flex items-center justify-center gap-2">
-                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Restablecer Aplicación a Estado Inicial
+                        <button onclick="resetAppDemoData()" class="w-full bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-200 py-3 rounded-xl font-bold text-xs transition">
+                            Restablecer Aplicación a Estado Inicial
                         </button>
                     </div>
                 </div>
@@ -345,39 +284,35 @@
 
         </main>
 
-        <!-- BOTTOM MINIMALIST NAVIGATION BAR -->
+        <!-- BOTTOM NAVIGATION BAR -->
         <nav class="bg-slate-900/95 backdrop-blur border-t border-slate-800 px-2 py-2 flex justify-around items-center z-30 shadow-2xl">
             <button onclick="switchTab('map')" id="nav-btn-map" class="flex flex-col items-center gap-1 text-brand-500 transition-colors">
                 <i data-lucide="map" class="w-5 h-5"></i>
                 <span class="text-[10px] font-semibold">Mapa</span>
             </button>
-
-            <button onclick="switchTab('routes')" id="nav-btn-routes" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-colors">
+            <button onclick="switchTab('routes')" id="nav-btn-routes" class="flex flex-col items-center gap-1 text-slate-400 transition-colors">
                 <i data-lucide="navigation" class="w-5 h-5"></i>
                 <span class="text-[10px] font-semibold">Rutas</span>
             </button>
-
-            <button onclick="switchTab('balance')" id="nav-btn-balance" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-colors">
+            <button onclick="switchTab('balance')" id="nav-btn-balance" class="flex flex-col items-center gap-1 text-slate-400 transition-colors">
                 <i data-lucide="receipt" class="w-5 h-5"></i>
                 <span class="text-[10px] font-semibold">Cierre</span>
             </button>
-
-            <button onclick="switchTab('supervisor')" id="nav-btn-supervisor" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-colors">
+            <button onclick="switchTab('supervisor')" id="nav-btn-supervisor" class="flex flex-col items-center gap-1 text-slate-400 transition-colors">
                 <i data-lucide="user-check" class="w-5 h-5"></i>
                 <span class="text-[10px] font-semibold">Supervisión</span>
             </button>
-
-            <button onclick="switchTab('gm')" id="nav-btn-gm" class="hidden flex flex-col items-center gap-1 text-purple-400 hover:text-purple-300 transition-colors">
+            <button onclick="switchTab('gm')" id="nav-btn-gm" class="hidden flex flex-col items-center gap-1 text-purple-400 transition-colors">
                 <i data-lucide="shield-alert" class="w-5 h-5"></i>
                 <span class="text-[10px] font-semibold">Rol GM</span>
             </button>
         </nav>
 
-        <!-- LOGIN MODAL -->
+        <!-- LOGIN MODAL (CON EL LOGOTIPO CORRECTAMENTE INTEGRADO) -->
         <div id="auth-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
                 <div class="text-center space-y-1">
-                    <div class="inline-flex p-3 bg-brand-600/20 text-brand-500 rounded-2xl border border-brand-500/30 mb-2">
+                    <div class="inline-flex p-3 bg-brand-600/20 text-brand-500 rounded-2xl border border-brand-500/30 mb-2 items-center justify-center">
                         <i data-lucide="truck" class="w-8 h-8"></i>
                     </div>
                     <h2 class="text-xl font-bold text-slate-100">TaT Delivery App</h2>
@@ -419,14 +354,6 @@
                         <label class="block text-slate-400 mb-1">Nombre de la Ruta</label>
                         <input id="route-name-input" type="text" placeholder="Ej: Ruta 4" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100">
                     </div>
-                    <div>
-                        <label class="block text-slate-400 mb-1">Punto de Inicio</label>
-                        <input id="route-start-input" type="text" value="Bodega Central Calle 10" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 mb-1">Punto de Fin</label>
-                        <input id="route-end-input" type="text" value="Centro de Acopio Sur" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100">
-                    </div>
                 </div>
                 <button onclick="createNewRoute()" class="w-full bg-brand-600 text-white font-semibold py-2.5 rounded-xl text-xs">Guardar y Crear</button>
             </div>
@@ -437,133 +364,118 @@
 
     <!-- CORE LOGIC SCRIPT -->
     <script>
-            let appState = {
-              currentUser: { name: 'Carlos Conductor', role: 'conductor' },
-              gmBypassTimer: false,
-              gmBypassLimits: false
-            };
+                let appState = {
+                    currentUser: { name: 'Carlos Conductor', role: 'conductor' },
+                    gmBypassTimer: false,
+                    gmBypassLimits: false
+                };
 
-            let logoTapCount = 0;
-            let logoTapTimer = null;
+                let logoTapCount = 0;
+                let logoTapTimer = null;
 
-            // Fixed 5-Tap Gesture Handler (Works smoothly on both Web clicks and Mobile touches)
-            function handleLogoTap(event) {
-              if (event) {
-                event.stopPropagation();
-                event.preventDefault();
-              }
-              logoTapCount++;
-              if (logoTapTimer) clearTimeout(logoTapTimer);
+                function handleLogoTap(event) {
+                    if (event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+                    }
+                    logoTapCount++;
+                    if (logoTapTimer) clearTimeout(logoTapTimer);
 
-              if (logoTapCount >= 5) {
-                unlockGMRole();
-                logoTapCount = 0;
-              } else {
-                logoTapTimer = setTimeout(() => {
-                  logoTapCount = 0;
-                }, 1500);
-              }
-            }
-
-            function unlockGMRole() {
-              appState.currentUser = { name: 'Admin Master GM', role: 'gm' };
-              appState.gmBypassTimer = true;
-              appState.gmBypassLimits = true;
-
-              document.getElementById('badge-gm').classList.remove('hidden');
-              document.getElementById('nav-btn-gm').classList.remove('hidden');
-              document.getElementById('current-user-role-badge').innerText = "MASTER GM";
-              document.getElementById('current-user-role-badge').className = "bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full";
-
-              document.getElementById('gm-toggle-timer').checked = true;
-              document.getElementById('gm-toggle-limits').checked = true;
-
-              switchTab('gm');
-              showToast("⚡ Modo Master GM activado correctamente");
-            }
-
-            function switchTab(tabId) {
-              ['map', 'routes', 'balance', 'supervisor', 'gm'].forEach(id => {
-                const viewEl = document.getElementById(`view-${id}`);
-                if (viewEl) viewEl.classList.add('hidden');
-
-                const btn = document.getElementById(`nav-btn-${id}`);
-                if (btn) {
-                  btn.classList.remove('text-brand-500', 'text-purple-400');
-                  btn.classList.add('text-slate-400');
+                    if (logoTapCount >= 5) {
+                        unlockGMRole();
+                        logoTapCount = 0;
+                    } else {
+                        logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 1500);
+                    }
                 }
-              });
 
-              const targetView = document.getElementById(`view-${tabId}`);
-              if (targetView) targetView.classList.remove('hidden');
+                function unlockGMRole() {
+                    appState.currentUser = { name: 'Admin Master GM', role: 'gm' };
+                    document.getElementById('badge-gm').classList.remove('hidden');
+                    document.getElementById('nav-btn-gm').classList.remove('hidden');
+                    document.getElementById('current-user-role-badge').innerText = "MASTER GM";
+                    document.getElementById('current-user-role-badge').className = "bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full";
+                    document.getElementById('gm-toggle-timer').checked = true;
+                    switchTab('gm');
+                    showToast("⚡ Modo Master GM activado correctamente");
+                }
 
-              const activeBtn = document.getElementById(`nav-btn-${tabId}`);
-              if (activeBtn) {
-                activeBtn.classList.remove('text-slate-400');
-                activeBtn.classList.add(tabId === 'gm' ? 'text-purple-400' : 'text-brand-500');
-              }
+                function switchTab(tabId) {
+                    ['map', 'routes', 'balance', 'supervisor', 'gm'].forEach(id => {
+                        const viewEl = document.getElementById(`view-${id}`);
+                        if (viewEl) viewEl.classList.add('hidden');
 
-              if (tabId === 'map' && typeof map !== 'undefined' && map) {
-                setTimeout(() => map.invalidateSize(), 200);
-              }
-            }
+                        const btn = document.getElementById(`nav-btn-${id}`);
+                        if (btn) {
+                            btn.classList.remove('text-brand-500', 'text-purple-400');
+                            btn.classList.add('text-slate-400');
+                        }
+                    });
 
-            let map = null;
-            document.addEventListener('DOMContentLoaded', () => {
-              if (typeof lucide !== 'undefined') lucide.createIcons();
+                    const targetView = document.getElementById(`view-${tabId}`);
+                    if (targetView) targetView.classList.remove('hidden');
 
-              // Initialize Leaflet Map centered on Bogota
-              if (document.getElementById('map')) {
-                map = L.map('map', { zoomControl: false }).setView([4.7110, -74.0721], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
-                L.control.zoom({ position: 'bottomleft' }).addTo(map);
-              }
+                    const activeBtn = document.getElementById(`nav-btn-${tabId}`);
+                    if (activeBtn) {
+                        activeBtn.classList.remove('text-slate-400');
+                        activeBtn.classList.add(tabId === 'gm' ? 'text-purple-400' : 'text-brand-500');
+                    }
 
-              renderDenominationsTable();
-            });
+                    if (tabId === 'map' && typeof map !== 'undefined' && map) {
+                        setTimeout(() => map.invalidateSize(), 200);
+                    }
+                }
 
-            function renderDenominationsTable() {
-              const tbody = document.getElementById('denom-table-body');
-              if (!tbody) return;
-              const denoms = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500];
-              tbody.innerHTML = denoms.map(d => `
-                <tr>
-                  <td class="p-2">$${d.toLocaleString()}</td>
-                  <td class="p-2 text-center"><input type="number" min="0" value="0" class="w-16 bg-slate-950 border border-slate-800 text-center rounded py-1 text-slate-100" onchange="calcCash()"></td>
-                  <td class="p-2 text-right text-emerald-400 font-mono">$0</td>
-                </tr>
-              `).join('');
-            }
+                let map = null;
+                document.addEventListener('DOMContentLoaded', () => {
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
 
-            function calcCash() {
-              // Logic for cash recalculation
-            }
+                    if (document.getElementById('map')) {
+                        map = L.map('map', { zoomControl: false }).setView([4.7110, -74.0721], 13);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+                        L.control.zoom({ position: 'bottomleft' }).addTo(map);
+                    }
+                    renderDenominationsTable();
+                });
 
-            function handleAuthSubmit(e) {
-              e.preventDefault();
-              document.getElementById('auth-modal').classList.add('hidden');
-              showToast("Sesión iniciada con éxito");
-            }
+                function renderDenominationsTable() {
+                    const tbody = document.getElementById('denom-table-body');
+                    if (!tbody) return;
+                    const denoms = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500];
+                    tbody.innerHTML = denoms.map(d => `
+                        <tr>
+                            <td class="p-2">$${d.toLocaleString()}</td>
+                            <td class="p-2 text-center"><input type="number" min="0" value="0" class="w-16 bg-slate-950 border border-slate-800 text-center rounded py-1 text-slate-100"></td>
+                            <td class="p-2 text-right text-emerald-400 font-mono">$0</td>
+                        </tr>
+                    `).join('');
+                }
 
-            function openCreateRouteModal() { document.getElementById('create-route-modal').classList.remove('hidden'); }
-            function closeCreateRouteModal() { document.getElementById('create-route-modal').classList.add('hidden'); }
-            function createNewRoute() {
-              closeCreateRouteModal();
-              showToast("Ruta creada con éxito");
-            }
-            function triggerSOSAlert() { alert("🚨 Alerta SOS enviada a la central de monitoreo."); }
-            function finalizeCashClosing() { alert("✅ Cierre de caja procesado y enviado al supervisor."); }
-            function resetAppDemoData() { localStorage.clear(); location.reload(); }
+                function handleAuthSubmit(e) {
+                    e.preventDefault();
+                    document.getElementById('auth-modal').classList.add('hidden');
+                    showToast("Sesión iniciada con éxito");
+                }
 
-            function showToast(msg) {
-              const container = document.getElementById('toast-container');
-              const toast = document.createElement('div');
-              toast.className = "bg-slate-800/95 border border-slate-700 text-slate-100 text-xs px-4 py-2.5 rounded-2xl shadow-xl backdrop-blur flex items-center gap-2";
-              toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-brand-400"></i> ${msg}`;
-              container.appendChild(toast);
-              lucide.createIcons();
-              setTimeout(() => toast.remove(), 3000);
-            }
+                function openCreateRouteModal() { document.getElementById('create-route-modal').classList.remove('hidden'); }
+                function closeCreateRouteModal() { document.getElementById('create-route-modal').classList.add('hidden'); }
+                function createNewRoute() {
+                    closeCreateRouteModal();
+                    showToast("Ruta creada con éxito");
+                }
+                function triggerSOSAlert() { alert("🚨 Alerta SOS enviada a la central de monitoreo."); }
+                function finalizeCashClosing() { alert("✅ Cierre de caja procesado y enviado al supervisor."); }
+                function resetAppDemoData() { localStorage.clear(); location.reload(); }
+
+                function showToast(msg) {
+                    const container = document.getElementById('toast-container');
+                    const toast = document.createElement('div');
+                    toast.className = "bg-slate-800/95 border border-slate-700 text-slate-100 text-xs px-4 py-2.5 rounded-2xl shadow-xl backdrop-blur flex items-center gap-2";
+                    toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-brand-400"></i> ${msg}`;
+                    container.appendChild(toast);
+                    lucide.createIcons();
+                    setTimeout(() => toast.remove(), 3000);
+                }
     </script>
 </body>
 </html>

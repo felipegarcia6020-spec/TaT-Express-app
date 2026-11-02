@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "722605805863",
+    "project_id": "tat-express-6d7b1",
+    "storage_bucket": "tat-express-6d7b1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:722605805863:android:d7316937b76bb605ba1902",
+        "android_client_info": {
+          "package_name": "com.TaTExpress.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoxgsW7nSJ3qHGY8lJGMAZwdfJT4Q_Xug"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

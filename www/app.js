@@ -98,8 +98,8 @@ function initMap() {
   renderRouteOnMap();
 }
 
-// Secret Tap Trigger for GM Role (5 Taps on Logo)
-function handleLogoClick(event) {
+// Secret Tap Trigger for GM Role (5 Taps on Logo) - Optimized for Web & Mobile
+function handleLogoTap(event) {
   if (event) {
     event.stopPropagation();
     event.preventDefault();
@@ -114,10 +114,9 @@ function handleLogoClick(event) {
   } else {
     logoTapTimer = setTimeout(() => { 
       logoTapCount = 0; 
-    }, 2000); // 2 segundos de ventana para dar los 5 toques
+    }, 2000); // 2 segundos de ventana para completar los 5 toques
   }
 }
-
 
 function unlockGMRole() {
   isGMUnlocked = true;

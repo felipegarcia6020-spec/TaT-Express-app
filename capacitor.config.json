@@ -1,6 +1,6 @@
 {
   "appId": "com.tatlogistics.express",
-  "appName": "TaT Express",
+  "appName": "com.TaTExpress.app",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {
@@ -8,7 +8,9 @@
   },
   "plugins": {
     "Geolocation": {
-      "permissions": ["location"]
+      "permissions": [
+        "location"
+      ]
     }
   }
 }

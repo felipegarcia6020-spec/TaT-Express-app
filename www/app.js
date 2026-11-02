@@ -2,6 +2,10 @@
 // TaT Express - Logística y Entregas (app.js)
 // ==========================================
 
+import { Geolocation } from '@capacitor/geolocation';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Preferences } from '@capacitor/preferences';
+
 // State Management
 let currentUser = { name: 'Carlos conductor', role: 'conductor', vehicle: 'Camión NHR 3.5T' };
 let activeView = 'map';
@@ -52,10 +56,15 @@ const denominations = [
 let denomCounts = {};
 
 // Initialize Application
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   if (typeof lucide !== 'undefined') {
     lucide.createIcons();
   }
+  
+  // Cargar datos guardados y solicitar permisos al iniciar
+  await cargarDatosLocales();
+  await solicitarPermisosNativos();
+
   initMap();
   renderRoutes();
   renderDenomTable();
@@ -63,12 +72,47 @@ document.addEventListener('DOMContentLoaded', () => {
   updateSupervisorStats();
 });
 
-// Map Initialization
+// Native Permissions Request (GPS & Camera)
+async function solicitarPermisosNativos() {
+  try {
+    // Solicitar permiso de GPS
+    const geoStatus = await Geolocation.requestPermissions();
+    if (geoStatus.location !== 'granted') {
+      console.warn("Permiso de GPS denegado por el usuario.");
+    }
+  } catch (e) {
+    console.log("Entorno web detectado o permisos nativos no requeridos en navegador.", e);
+  }
+}
+
+// Capacitor Preferences (Almacenamiento Local Seguro)
+async function guardarDatosLocales() {
+  await Preferences.set({
+    key: 'tat_routes_data',
+    value: JSON.stringify(routes),
+  });
+}
+
+async function cargarDatosLocales() {
+  try {
+    const { value } = await Preferences.get({ key: 'tat_routes_data' });
+    if (value) {
+      routes = JSON.parse(value);
+    }
+    const { value: userVal } = await Preferences.get({ key: 'tat_current_user' });
+    if (userVal) {
+      currentUser = JSON.parse(userVal);
+    }
+  } catch (e) {
+    console.error("Error al cargar almacenamiento local:", e);
+  }
+}
+
+// Map Initialization & Native GPS Tracking
 function initMap() {
   const mapElement = document.getElementById('map');
   if (!mapElement) return;
 
-  // Default center: Bogotá Colombia coordinates
   map = L.map('map', { zoomControl: false }).setView([4.7110, -74.0721], 13);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -78,16 +122,17 @@ function initMap() {
 
   L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
-  // User Position Marker (Simulated GPS / Guide)
   const userIcon = L.divIcon({
     className: 'custom-user-icon',
     html: '<div class="relative"><div class="user-pos-pulse"></div><div class="user-pos-marker"></div></div>',
     iconSize: [20, 20],
     iconAnchor: [10, 10]
   });
-  userMarker = L.marker([4.7110, -74.0721], { icon: userIcon }).addTo(map).bindPopup("<b>Tu Posición Actual</b>");
+  userMarker = L.marker([4.7110, -74.0721], { icon: userIcon }).addTo(map).bindPopup("<b>Tu Posición Actual (GPS)</b>");
 
-  // Handle map clicks for adding stops
+  // Obtener posición real mediante Capacitor Geolocation
+  actualizarUbicacionGPSReal();
+
   map.on('click', (e) => {
     if (isClickAddStopActive) {
       addStopFromCoordinates(e.latlng.lat, e.latlng.lng);
@@ -98,7 +143,21 @@ function initMap() {
   renderRouteOnMap();
 }
 
-// Secret Tap Trigger for GM Role (5 Taps on Logo) - Optimized for Web & Mobile
+async function actualizarUbicacionGPSReal() {
+  try {
+    const coordinates = await Geolocation.getCurrentPosition();
+    const lat = coordinates.coords.latitude;
+    const lng = coordinates.coords.longitude;
+    if (userMarker && map) {
+      userMarker.setLatLng([lat, lng]);
+      map.setView([lat, lng], 15);
+    }
+  } catch (e) {
+    console.log("Usando ubicación simulada por defecto (Entorno Web o sin señal GPS)");
+  }
+}
+
+// Secret Tap Trigger for GM Role (5 Taps on Logo)
 function handleLogoTap(event) {
   if (event) {
     event.stopPropagation();
@@ -114,7 +173,7 @@ function handleLogoTap(event) {
   } else {
     logoTapTimer = setTimeout(() => { 
       logoTapCount = 0; 
-    }, 2000); // 2 segundos de ventana para completar los 5 toques
+    }, 2000);
   }
 }
 
@@ -125,7 +184,7 @@ function unlockGMRole() {
     gmNavBtn.classList.remove('hidden');
     gmNavBtn.classList.add('flex');
   }
-  alert("🔓 ¡Modo GM (Game Master) Desbloqueado! Ahora tienes acceso al panel de control exclusivo en la barra inferior.");
+  alert("🔓 ¡Modo GM (Game Master) Desbloqueado!");
   switchView('gm');
 }
 
@@ -144,7 +203,7 @@ function toggleGMTimeBomb(checked) {
 
 function toggleGMLimits(checked) {
   config.disableLimits = checked;
-  alert(checked ? "Limitadores de Ruta/Paradas DESACTIVADOS." : "Limitadores ACTIVADOS (5 rutas max, 30 paradas/ruta).");
+  alert(checked ? "Limitadores de Ruta/Paradas DESACTIVADOS." : "Limitadores ACTIVADOS.");
 }
 
 // View Switching Logic
@@ -214,7 +273,6 @@ function renderRouteOnMap() {
   }
 }
 
-// Toggle stop status between delivered and pending
 function toggleStopStatus(stopId) {
   const currentRoute = routes.find(r => r.id === currentRouteId);
   if (!currentRoute) return;
@@ -225,6 +283,7 @@ function toggleStopStatus(stopId) {
     renderRoutes();
     updateCashSummary();
     updateSupervisorStats();
+    guardarDatosLocales();
   }
 }
 
@@ -232,7 +291,7 @@ function toggleStopStatus(stopId) {
 function enableClickAddStop() {
   const activeRoute = routes.find(r => r.id === currentRouteId);
   if (!config.disableLimits && activeRoute && activeRoute.stops.length >= 30) {
-    alert("⚠️ Límite del Modo Free alcanzado (Máximo 30 paradas por ruta).");
+    alert("⚠️ Límite del Modo Free alcanzado.");
     return;
   }
   isClickAddStopActive = true;
@@ -269,25 +328,22 @@ function addStopFromCoordinates(lat, lng) {
   renderRoutes();
   updateCashSummary();
   updateSupervisorStats();
+  guardarDatosLocales();
 }
 
-// Search Location Simulation
 function searchLocation() {
   const searchInput = document.getElementById('map-search-input');
   if (!searchInput) return;
   const query = searchInput.value;
   if (!query) return;
-  alert(`Buscando dirección: "${query}". (Simulado: centrado en punto de entrega)`);
+  alert(`Buscando dirección: "${query}".`);
   if (map) {
     map.setView([4.7150, -74.0750], 15);
   }
 }
 
-// Recenter map
 function recenterToUser() {
-  if (userMarker && map) {
-    map.setView(userMarker.getLatLng(), 15);
-  }
+  actualizarUbicacionGPSReal();
 }
 
 // Routes List Rendering
@@ -327,10 +383,9 @@ function selectRoute(id) {
   renderRouteOnMap();
 }
 
-// Route Creation Modal Handlers
 function openCreateRouteModal() {
   if (!config.disableLimits && routes.length >= 5) {
-    alert("⚠️ Límite del Modo Free alcanzado (Máximo 5 rutas).");
+    alert("⚠️ Límite del Modo Free alcanzado.");
     return;
   }
   const modal = document.getElementById('modal-create-route');
@@ -365,6 +420,7 @@ function confirmCreateRoute() {
   closeCreateRouteModal();
   renderRoutes();
   switchView('map');
+  guardarDatosLocales();
 }
 
 // Cash Closing & Summary Logic
@@ -426,24 +482,8 @@ function updateCashSummary() {
   if (statExpenses) statExpenses.innerText = `$${expenseTotal.toLocaleString()}`;
 }
 
-function addExpense() {
-  const descInput = document.getElementById('expense-desc');
-  const amtInput = document.getElementById('expense-amount');
-  if (!descInput || !amtInput) return;
-
-  const desc = descInput.value;
-  const amt = parseFloat(amtInput.value);
-  if (!desc || isNaN(amt)) return;
-
-  routeExpenses.push({ desc, amount: amt });
-  descInput.value = '';
-  amtInput.value = '';
-  updateCashSummary();
-  alert('Gasto de ruta registrado.');
-}
-
 function finalizeCashClosing() {
-  alert("✅ Arqueo y cierre de caja procesado con éxito. Reporte enviado al Supervisor.");
+  alert("✅ Arqueo y cierre de caja procesado con éxito y respaldado.");
 }
 
 // Supervisor Dashboard Rendering
@@ -474,7 +514,6 @@ function updateSupervisorStats() {
   if (supPendingRejected) supPendingRejected.innerText = `${pending} / 0`;
   if (supTotalMoney) supTotalMoney.innerText = `$${totalMoney.toLocaleString()}`;
 
-  // Drivers Fleet Card Rendering
   const driversContainer = document.getElementById('supervisor-drivers-list');
   if (driversContainer) {
     driversContainer.innerHTML = `
@@ -484,44 +523,15 @@ function updateSupervisorStats() {
           <div>
             <h4 class="font-bold text-white text-xs">${currentUser.name}</h4>
             <p class="text-[10px] text-slate-400">Vehículo: ${currentUser.vehicle}</p>
-            <p class="text-[10px] text-emerald-400">Ruta: Ruta 1 - Calle 80 (En tránsito)</p>
+            <p class="text-[10px] text-emerald-400">Ruta Activa</p>
           </div>
         </div>
-        <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px]">Activo GPS</span>
+        <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px]">GPS Activo</span>
       </div>
     `;
   }
 }
 
-// Emergency Trigger Button
 function triggerEmergency() {
-  alert("🚨 ALERTA DE EMERGENCIA ENVIADA AL SUPERVISOR.\nUbicación GPS transmitida a central.");
-}
-
-// Modal & Auth Handlers
-function toggleAuthModal() {
-  const modal = document.getElementById('modal-auth');
-  if (modal) modal.classList.toggle('hidden');
-}
-
-function login() {
-  const usernameInput = document.getElementById('login-username');
-  const roleInput = document.getElementById('login-role');
-  const vehicleInput = document.getElementById('login-vehicle');
-
-  const username = usernameInput ? usernameInput.value : 'conductor1';
-  const role = roleInput ? roleInput.value : 'conductor';
-  const vehicle = vehicleInput ? vehicleInput.value : 'Camión NHR 3.5T';
-
-  currentUser = { name: username, role: role, vehicle: vehicle };
-
-  const roleBadge = document.getElementById('role-badge');
-  if (roleBadge) roleBadge.innerText = role === 'supervisor' ? 'Supervisor' : 'Conductor';
-  toggleAuthModal();
-
-  if (role === 'supervisor') {
-    switchView('supervisor');
-  } else {
-    switchView('map');
-  }
+  alert("🚨 ALERTA DE EMERGENCIA ENVIADA. Ubicación GPS transmitida.");
 }

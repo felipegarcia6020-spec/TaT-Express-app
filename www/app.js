@@ -99,7 +99,12 @@ function initMap() {
 }
 
 // Secret Tap Trigger for GM Role (5 Taps on Logo)
-function handleLogoClick() {
+function handleLogoClick(event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
   logoTapCount++;
   clearTimeout(logoTapTimer);
 
@@ -107,9 +112,12 @@ function handleLogoClick() {
     logoTapCount = 0;
     unlockGMRole();
   } else {
-    logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 2000);
+    logoTapTimer = setTimeout(() => { 
+      logoTapCount = 0; 
+    }, 2000); // 2 segundos de ventana para dar los 5 toques
   }
 }
+
 
 function unlockGMRole() {
   isGMUnlocked = true;

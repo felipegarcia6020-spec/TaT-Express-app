@@ -75,7 +75,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Native Permissions Request (GPS & Camera)
 async function solicitarPermisosNativos() {
   try {
-    // Solicitar permiso de GPS
     const geoStatus = await Geolocation.requestPermissions();
     if (geoStatus.location !== 'granted') {
       console.warn("Permiso de GPS denegado por el usuario.");
@@ -108,6 +107,37 @@ async function cargarDatosLocales() {
   }
 }
 
+// Gestión de Roles Independientes y Pantalla de Login
+function iniciarSesionComo(rol) {
+  const loginScreen = document.getElementById('view-login'); 
+  const appContainer = document.getElementById('app-main-layout'); 
+  
+  if (loginScreen) loginScreen.classList.add('hidden');
+  if (appContainer) appContainer.classList.remove('hidden');
+
+  const navSupervisor = document.getElementById('nav-btn-supervisor');
+
+  if (rol === 'conductor') {
+    currentUser = { name: 'Carlos Conductor', role: 'conductor', vehicle: 'Camión NHR' };
+    // Ocultar estrictamente el módulo de supervisor al conductor
+    if (navSupervisor) {
+      navSupervisor.classList.add('hidden');
+      navSupervisor.classList.remove('flex');
+    }
+    switchView('map');
+  } else if (rol === 'supervisor') {
+    currentUser = { name: 'Ana Supervisor', role: 'supervisor', vehicle: 'Flota General' };
+    // Mostrar módulo de supervisor
+    if (navSupervisor) {
+      navSupervisor.classList.remove('hidden');
+      navSupervisor.classList.add('flex');
+    }
+    switchView('supervisor');
+  }
+  
+  guardarDatosLocales();
+}
+
 // Map Initialization & Native GPS Tracking
 function initMap() {
   const mapElement = document.getElementById('map');
@@ -130,7 +160,6 @@ function initMap() {
   });
   userMarker = L.marker([4.7110, -74.0721], { icon: userIcon }).addTo(map).bindPopup("<b>Tu Posición Actual (GPS)</b>");
 
-  // Obtener posición real mediante Capacitor Geolocation
   actualizarUbicacionGPSReal();
 
   map.on('click', (e) => {
@@ -206,7 +235,7 @@ function toggleGMLimits(checked) {
   alert(checked ? "Limitadores de Ruta/Paradas DESACTIVADOS." : "Limitadores ACTIVADOS.");
 }
 
-// View Switching Logic
+// View Switching Logic con Corrección de Renderizado del Mapa
 function switchView(viewName) {
   activeView = viewName;
   ['map', 'routes', 'cash', 'supervisor', 'gm'].forEach(v => {
@@ -214,7 +243,7 @@ function switchView(viewName) {
     const btnEl = document.getElementById(`nav-btn-${v}`);
     if (viewEl) viewEl.classList.add('hidden');
     if (btnEl) {
-      btnEl.classList.remove('text-blue-400', 'text-purple-400');
+      btnEl.classList.remove('text-blue-400', 'text-purple-400', 'text-emerald-400');
       btnEl.classList.add('text-slate-400');
     }
   });
@@ -228,8 +257,14 @@ function switchView(viewName) {
     currentBtn.classList.add(viewName === 'gm' ? 'text-purple-400' : 'text-blue-400');
   }
 
-  if (viewName === 'map' && map) {
-    setTimeout(() => map.invalidateSize(), 200);
+  // Solución definitiva para que el mapa renderice correctamente al cambiar de pestaña
+  if (viewName === 'map') {
+    setTimeout(() => {
+      if (map) {
+        map.invalidateSize();
+        actualizarUbicacionGPSReal();
+      }
+    }, 150);
   }
 }
 

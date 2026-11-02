@@ -1,339 +1,241 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-slate-950 text-slate-100">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TaT Express - Logística & Entregas</title>
-
-    <!-- Favicon para la versión Web -->
-    <link rel="icon" type="image/png" href="assets/icon-only.png">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaT Express - Logística</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Leaflet CSS & JS for Interactive Map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <script>
-                tailwind.config = {
-                  darkMode: 'class',
-                  theme: {
-                    extend: {
-                      fontFamily: { sans: ['Inter', 'sans-serif'] },
-                      colors: {
-                        brand: {
-                          50: '#eef2ff',
-                          500: '#6366f1',
-                          600: '#4f46e5',
-                          700: '#4338ca',
-                        }
-                      }
-                    }
-                  }
-                }
-    </script>
-
     <style>
-        .leaflet-container {
-            background: #0f172a !important;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-            background: #1e293b !important;
-            color: #f8fafc !important;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-        }
-
-        .leaflet-control-zoom a {
-            background-color: #1e293b !important;
-            color: #f8fafc !important;
-            border-color: #334155 !important;
-        }
-
-        .user-location-pulse {
-            width: 18px;
-            height: 18px;
-            background-color: #3b82f6;
-            border: 3px solid #ffffff;
+        .user-pos-pulse {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(59, 130, 246, 0.4);
             border-radius: 50%;
-            box-shadow: 0 0 15px #3b82f6;
-            animation: pulse-ring 2s infinite;
+            animation: pulse 1.5s infinite;
         }
 
-        @keyframes pulse-ring {
-            0% {
-                box-shadow: 0 0 0 0px rgba(59, 130, 246, 0.7);
-            }
+        .user-pos-marker {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
 
-            70% {
-                box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
             }
 
             100% {
-                box-shadow: 0 0 0 0px rgba(59, 130, 246, 0);
+                transform: scale(2.5);
+                opacity: 0;
             }
-        }
-
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
         }
     </style>
 </head>
-<body class="h-full flex flex-col antialiased selection:bg-brand-500 selection:text-white select-none overflow-hidden">
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden">
 
-    <!-- APP CONTAINER -->
-    <div id="app" class="flex flex-col h-full w-full max-w-md mx-auto bg-slate-900 relative shadow-2xl overflow-hidden border-x border-slate-800">
-
-        <!-- TOP TRIAL & EMERGENCY BANNER -->
-        <div id="top-banner" class="bg-gradient-to-r from-amber-600 to-indigo-600 px-3 py-1.5 flex items-center justify-between text-xs font-semibold text-white shadow-md z-30">
-            <div class="flex items-center gap-1.5">
-                <i data-lucide="clock" class="w-4 h-4 animate-pulse"></i>
-                <span id="trial-timer-text">Licencia Prueba: 2d 23h restantes</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <button id="btn-sos" onclick="triggerEmergency()" class="bg-red-600 hover:bg-red-700 text-white px-2 py-0.5 rounded-full font-bold flex items-center gap-1 text-[11px] border border-red-400 animate-bounce">
-                    <i data-lucide="alert-triangle" class="w-3 h-3"></i> S.O.S
-                </button>
-                <span id="badge-gm" class="hidden bg-purple-900/80 text-purple-200 border border-purple-400 text-[10px] px-1.5 py-0.5 rounded font-mono">MODO GM</span>
-            </div>
+    <!-- ================= 1. VISTA DE LOGIN Y REGISTRO (INICIAL) ================= -->
+    <div id="view-login" class="flex-1 flex flex-col justify-center px-6 py-12 max-w-sm mx-auto w-full z-50 bg-slate-950">
+        <div class="text-center mb-8">
+            <!-- 5 toques aquí activan el modo GM -->
+            <h1 onclick="handleLogoTap(event)" class="text-3xl font-extrabold text-blue-500 cursor-pointer select-none">TaT Express</h1>
+            <p class="text-xs text-slate-400 mt-1">Logística y Distribución</p>
         </div>
 
-        <!-- HEADER / VEHICLE SELECTOR & SEARCH -->
-        <header class="bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-2 flex flex-col gap-2 z-20 shadow-lg">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <!-- LOGO WITH 5-TAP GM UNLOCK TRIGGER -->
-                    <div id="app-logo-btn" onclick="handleLogoTap(event)" class="p-2 bg-brand-600/20 text-brand-500 rounded-xl border border-brand-500/30 cursor-pointer active:scale-90 transition-transform select-none">
-                        <i data-lucide="truck" class="w-5 h-5 pointer-events-none"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-                            TaT Express
-                            <span id="role-badge" class="bg-indigo-950 text-indigo-400 border border-indigo-800 text-[10px] font-normal px-2 py-0.5 rounded-full">Conductor</span>
-                        </h1>
-                        <p id="user-info-text" class="text-[11px] text-slate-400">Ruta Activa: Centro - Sur</p>
-                    </div>
-                </div>
-
-                <!-- Vehicle Dropdown Switcher -->
-                <div class="relative">
-                    <select id="vehicle-type-select" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-brand-500 outline-none">
-                        <option value="furgon">🚚 Furgón (35 km/h)</option>
-                        <option value="camion">🚛 Camión (25 km/h)</option>
-                        <option value="van">🚐 Van (40 km/h)</option>
-                        <option value="moto">🏍️ Moto (45 km/h)</option>
-                    </select>
-                </div>
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs font-semibold text-slate-300">Correo Electrónico</label>
+                <input type="email" id="login-email" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="usuario@tatexpress.com">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-300">Contraseña</label>
+                <input type="password" id="login-password" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="••••••••">
             </div>
 
-            <!-- Quick Search Bar for Map -->
-            <div id="search-bar-container" class="relative">
-                <input id="map-search-input" type="text" placeholder="Buscar dirección o punto de interés..."
-                       class="w-full bg-slate-800/90 text-slate-100 text-xs rounded-xl pl-9 pr-9 py-2 border border-slate-700/80 focus:outline-none focus:border-brand-500 transition-all placeholder:text-slate-500 shadow-inner">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
-                <button onclick="searchLocation()" class="absolute right-2 top-1.5 p-1 bg-brand-600 rounded-lg text-white hover:bg-brand-500 transition-colors">
-                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            <!-- Botones separados para Iniciar Sesión y Registrarse -->
+            <div class="pt-2 space-y-3">
+                <button onclick="iniciarSesionComo('conductor')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/30">
+                    Iniciar Sesión (Conductor)
+                </button>
+                <button onclick="iniciarSesionComo('supervisor')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold py-2.5 rounded-xl text-xs transition-all">
+                    Iniciar Sesión (Supervisor)
+                </button>
+                <button onclick="alert('Funcionalidad de registro en desarrollo')" class="w-full text-center text-xs text-blue-400 hover:underline pt-2">
+                    ¿No tienes cuenta? Regístrate aquí
                 </button>
             </div>
-        </header>
-
-        <!-- MAIN DYNAMIC CONTENT AREA -->
-        <main class="flex-1 relative overflow-hidden bg-slate-950">
-
-            <!-- VIEW 1: INTERACTIVE MAP -->
-            <section id="view-map" class="w-full h-full relative">
-                <div id="map" class="w-full h-full z-0"></div>
-
-                <div id="add-stop-banner" class="hidden absolute top-3 left-1/2 -translate-x-1/2 bg-amber-500/90 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-full shadow-lg z-10 flex items-center gap-2 border border-amber-300 backdrop-blur animate-pulse">
-                    <i data-lucide="map-pin" class="w-4 h-4"></i>
-                    Toca en el mapa para crear parada
-                    <button onclick="cancelAddStopMode()" class="ml-1 bg-slate-900 text-white rounded-full p-0.5"><i data-lucide="x" class="w-3 h-3"></i></button>
-                </div>
-
-                <div class="absolute bottom-4 right-4 flex flex-col gap-2 z-10">
-                    <button onclick="recenterToUser()" title="Ubicación Actual" class="p-3 bg-slate-800/90 text-brand-400 rounded-full border border-slate-700 shadow-xl backdrop-blur hover:bg-slate-700 active:scale-95 transition">
-                        <i data-lucide="crosshair" class="w-5 h-5"></i>
-                    </button>
-                    <button onclick="enableClickAddStop()" title="Agregar Parada" class="p-3 bg-brand-600 text-white rounded-full border border-brand-400 shadow-xl backdrop-blur hover:bg-brand-500 active:scale-95 transition flex items-center justify-center">
-                        <i data-lucide="plus" class="w-6 h-6"></i>
-                    </button>
-                </div>
-
-                <div class="absolute bottom-4 left-4 right-16 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-2xl p-3 shadow-xl z-10 flex justify-around items-center text-center">
-                    <div>
-                        <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Paradas</p>
-                        <p id="stat-visited" class="text-sm font-bold text-slate-100">0/3</p>
-                    </div>
-                    <div class="h-6 w-px bg-slate-800"></div>
-                    <div>
-                        <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Efectivo</p>
-                        <p id="stat-cash" class="text-sm font-bold text-emerald-400">$0</p>
-                    </div>
-                    <div class="h-6 w-px bg-slate-800"></div>
-                    <div>
-                        <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Transfers</p>
-                        <p id="stat-transfers" class="text-sm font-bold text-purple-400">$0</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- VIEW 2: ROUTES MANAGEMENT -->
-            <section id="view-routes" class="w-full h-full hidden overflow-y-auto p-4 space-y-4 no-scrollbar pb-24">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                        <i data-lucide="route" class="w-5 h-5 text-brand-500"></i> Gestión de Rutas
-                    </h2>
-                    <button onclick="openCreateRouteModal()" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-lg active:scale-95 transition">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i> Nueva Ruta
-                    </button>
-                </div>
-                <div id="routes-list" class="space-y-3"></div>
-            </section>
-
-            <!-- VIEW 3: CASH CLOSING (CASH) -->
-            <section id="view-cash" class="w-full h-full hidden overflow-y-auto p-4 space-y-4 no-scrollbar pb-24">
-                <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <i data-lucide="wallet" class="w-5 h-5 text-emerald-500"></i> Cierre de Caja & Recaudos
-                </h2>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-3">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Arqueo de Efectivo por Denominación</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-xs text-left">
-                            <thead>
-                                <tr class="border-b border-slate-800 text-slate-400">
-                                    <th class="p-2">Denominación</th>
-                                    <th class="p-2 text-center">Cantidad</th>
-                                    <th class="p-2 text-right">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody id="denom-table-body" class="divide-y divide-slate-800/50"></tbody>
-                        </table>
-                    </div>
-                    <div class="flex justify-between font-bold text-sm pt-2">
-                        <span>Total Arqueado:</span>
-                        <span id="denom-total" class="text-emerald-400">$0</span>
-                    </div>
-                    <button onclick="finalizeCashClosing()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg mt-2">
-                        Finalizar y Enviar Cierre de Caja
-                    </button>
-                </div>
-            </section>
-
-            <!-- VIEW 4: SUPERVISOR PANEL -->
-            <section id="view-supervisor" class="w-full h-full hidden overflow-y-auto p-4 space-y-4 no-scrollbar pb-24">
-                <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <i data-lucide="shield-check" class="w-5 h-5 text-indigo-400"></i> Panel de Control Supervisor
-                </h2>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-3">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Conductores & Flota Activa</h3>
-                    <div id="supervisor-drivers-list" class="space-y-2"></div>
-                </div>
-            </section>
-
-            <!-- VIEW 5: GM MASTER ADMIN PANEL -->
-            <section id="view-gm" class="w-full h-full hidden overflow-y-auto p-4 space-y-4 no-scrollbar pb-24">
-                <div class="bg-slate-900/90 border border-purple-800/80 rounded-2xl p-4 space-y-4 relative overflow-hidden shadow-2xl">
-                    <div class="flex items-center justify-between border-b border-purple-900/60 pb-3">
-                        <h2 class="text-sm font-extrabold text-purple-400 uppercase tracking-wider flex items-center gap-2">
-                            <i data-lucide="sparkles" class="w-5 h-5"></i> Panel de Control Master GM
-                        </h2>
-                        <span class="text-[10px] bg-purple-950 text-purple-300 border border-purple-700 px-2 py-0.5 rounded-full font-mono">ACCESO PRIVILEGIADO</span>
-                    </div>
-                    <div class="space-y-3 text-xs">
-                        <label class="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-purple-900/40 cursor-pointer">
-                            <span class="text-slate-200 font-semibold">Desactivar Bomba de Tiempo (Licencia)</span>
-                            <input type="checkbox" id="gm-toggle-timer" onchange="toggleGMTimeBomb(this.checked)" class="w-5 h-5 accent-purple-600 rounded">
-                        </label>
-                        <label class="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-purple-900/40 cursor-pointer">
-                            <span class="text-slate-200 font-semibold">Desbloquear Límites (Rutas/Paradas)</span>
-                            <input type="checkbox" id="gm-toggle-limits" onchange="toggleGMLimits(this.checked)" class="w-5 h-5 accent-purple-600 rounded">
-                        </label>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-
-        <!-- BOTTOM NAVIGATION BAR -->
-        <nav class="bg-slate-900/95 backdrop-blur border-t border-slate-800 px-2 py-2 flex justify-around items-center z-30 shadow-2xl">
-            <button onclick="switchView('map')" id="nav-btn-map" class="flex flex-col items-center gap-1 text-blue-400 transition-colors">
-                <i data-lucide="map" class="w-5 h-5"></i>
-                <span class="text-[10px] font-semibold">Mapa</span>
-            </button>
-            <button onclick="switchView('routes')" id="nav-btn-routes" class="flex flex-col items-center gap-1 text-slate-400 transition-colors">
-                <i data-lucide="navigation" class="w-5 h-5"></i>
-                <span class="text-[10px] font-semibold">Rutas</span>
-            </button>
-            <button onclick="switchView('cash')" id="nav-btn-cash" class="flex flex-col items-center gap-1 text-slate-400 transition-colors">
-                <i data-lucide="receipt" class="w-5 h-5"></i>
-                <span class="text-[10px] font-semibold">Cierre</span>
-            </button>
-            <button onclick="switchView('supervisor')" id="nav-btn-supervisor" class="flex flex-col items-center gap-1 text-slate-400 transition-colors">
-                <i data-lucide="user-check" class="w-5 h-5"></i>
-                <span class="text-[10px] font-semibold">Supervisión</span>
-            </button>
-            <button onclick="switchView('gm')" id="nav-btn-gm" class="hidden flex flex-col items-center gap-1 text-purple-400 transition-colors">
-                <i data-lucide="shield-alert" class="w-5 h-5"></i>
-                <span class="text-[10px] font-semibold">Rol GM</span>
-            </button>
-        </nav>
-
-        <!-- LOGIN MODAL -->
-        <div id="modal-auth" class="hidden fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
-                <div class="text-center space-y-1">
-                    <div class="inline-flex p-3 bg-brand-600/20 text-brand-500 rounded-2xl border border-brand-500/30 mb-2 items-center justify-center">
-                        <i data-lucide="truck" class="w-8 h-8"></i>
-                    </div>
-                    <h2 class="text-xl font-bold text-slate-100">TaT Delivery App</h2>
-                    <p class="text-xs text-slate-400">Sistema Logístico Tienda a Tienda</p>
-                </div>
-            </div>
         </div>
-
-        <!-- CREATE ROUTE MODAL -->
-        <div id="modal-create-route" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-slate-100">Crear Nueva Ruta TaT</h3>
-                    <button onclick="closeCreateRouteModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-                </div>
-                <div class="space-y-3 text-xs">
-                    <div>
-                        <label class="block text-slate-400 mb-1">Nombre de la Ruta</label>
-                        <input id="route-name-input" type="text" placeholder="Ej: Ruta 4 - Polígono Norte" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 mb-1">Punto de Inicio</label>
-                        <input id="route-start-input" type="text" value="Bodega Central" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 mb-1">Punto de Destino</label>
-                        <input id="route-end-input" type="text" value="Terminal Garaje" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100">
-                    </div>
-                </div>
-                <button onclick="confirmCreateRoute()" class="w-full bg-brand-600 text-white font-semibold py-2.5 rounded-xl text-xs">Guardar y Crear Ruta</button>
-            </div>
-        </div>
-
     </div>
 
-    <!-- EXTERNAL JS SCRIPT LINK -->
-    <script src="app.js"></script>
+    <!-- ================= 2. CONTENEDOR PRINCIPAL DE LA APP (OCULTO AL INICIO) ================= -->
+    <div id="app-main-layout" class="hidden flex-1 flex flex-col h-full overflow-hidden relative">
+
+        <!-- Banner para modo agregar parada -->
+        <div id="add-stop-banner" class="hidden absolute top-0 left-0 right-0 bg-blue-600 text-white text-xs py-2 px-4 z-[999] flex justify-between items-center shadow-lg">
+            <span>📍 Toca el mapa para ubicar la nueva parada</span>
+            <button onclick="cancelAddStopMode()" class="bg-blue-700 hover:bg-blue-800 px-2 py-1 rounded font-bold">Cancelar</button>
+        </div>
+
+        <!-- VISTA: MAPA -->
+        <div id="view-map" class="flex-1 relative w-full h-full">
+            <div id="map" class="w-full h-full z-10"></div>
+            <!-- Controles flotantes del mapa -->
+            <div class="absolute top-4 right-4 z-20 flex flex-col gap-2">
+                <button onclick="enableClickAddStop()" class="bg-slate-900/90 text-white p-2.5 rounded-xl border border-slate-700 shadow-lg text-xs flex items-center gap-1 font-semibold">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Añadir Parada
+                </button>
+                <button onclick="recenterToUser()" class="bg-slate-900/90 text-white p-2.5 rounded-xl border border-slate-700 shadow-lg text-xs flex items-center gap-1 font-semibold">
+                    <i data-lucide="navigation" class="w-4 h-4"></i> Mi GPS
+                </button>
+            </div>
+        </div>
+
+        <!-- VISTA: RUTAS -->
+        <div id="view-routes" class="hidden flex-1 p-4 overflow-y-auto bg-slate-950 pb-20">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-white">Gestión de Rutas</h2>
+                <button onclick="openCreateRouteModal()" class="bg-blue-600 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">Nueva Ruta</button>
+            </div>
+            <div id="routes-list" class="space-y-3"></div>
+        </div>
+
+        <!-- VISTA: CAJA -->
+        <div id="view-cash" class="hidden flex-1 p-4 overflow-y-auto bg-slate-950 pb-20">
+            <h2 class="text-lg font-bold text-white mb-4">Cierre de Caja y Arqueo</h2>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-slate-900 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-[10px] text-slate-400">Visitas Efectuadas</span>
+                    <h3 id="stat-visited" class="text-lg font-bold text-white">0/0</h3>
+                </div>
+                <div class="bg-slate-900 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-[10px] text-slate-400">Total Efectivo</span>
+                    <h3 id="stat-cash" class="text-lg font-bold text-emerald-400">$0</h3>
+                </div>
+            </div>
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4">
+                <h3 class="text-sm font-bold text-white mb-3">Desglose de Denominaciones</h3>
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="text-slate-400 border-b border-slate-800">
+                            <th class="text-left p-2">Denominación</th>
+                            <th class="text-center p-2">Cantidad</th>
+                            <th class="text-right p-2">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="denom-table-body"></tbody>
+                </table>
+                <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center font-bold text-sm">
+                    <span>Total Recaudado:</span>
+                    <span id="denom-total" class="text-emerald-400">$0</span>
+                </div>
+                <button onclick="finalizeCashClosing()" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-bold">
+                    Finalizar Arqueo
+                </button>
+            </div>
+        </div>
+
+        <!-- VISTA: SUPERVISOR -->
+        <div id="view-supervisor" class="hidden flex-1 p-4 overflow-y-auto bg-slate-950 pb-20">
+            <h2 class="text-lg font-bold text-white mb-4">Panel de Supervisión</h2>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-slate-900 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-[10px] text-slate-400">Rutas Activas</span>
+                    <h3 id="sup-active-routes" class="text-lg font-bold text-white">0</h3>
+                </div>
+                <div class="bg-slate-900 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-[10px] text-slate-400">Dinero Total Recaudado</span>
+                    <h3 id="sup-total-money" class="text-lg font-bold text-emerald-400">$0</h3>
+                </div>
+            </div>
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 mb-4">
+                <h3 class="text-sm font-bold text-white mb-2">Conductores en Ruta</h3>
+                <div id="supervisor-drivers-list" class="space-y-2"></div>
+            </div>
+            <button onclick="triggerEmergency()" class="w-full bg-red-600/20 text-red-400 border border-red-500/30 py-3 rounded-xl font-bold text-xs">
+                🚨 Emitir Alerta de Emergencia Global
+            </button>
+        </div>
+
+        <!-- VISTA: GM (GAME MASTER) -->
+        <div id="view-gm" class="hidden flex-1 p-4 overflow-y-auto bg-slate-950 pb-20">
+            <h2 class="text-lg font-bold text-purple-400 mb-4">Panel de Control GM</h2>
+            <div class="space-y-3">
+                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-bold text-white">Desactivar Límite de Licencia</h3>
+                        <p id="trial-timer" class="text-xs text-slate-400">Licencia Demo (3d)</p>
+                    </div>
+                    <input type="checkbox" onchange="toggleGMTimeBomb(this.checked)" class="w-5 h-5 accent-purple-500">
+                </div>
+                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-bold text-white">Omitir Límites de Paradas</h3>
+                        <p class="text-xs text-slate-400">Permitir más de 30 paradas y 5 rutas</p>
+                    </div>
+                    <input type="checkbox" onchange="toggleGMLimits(this.checked)" class="w-5 h-5 accent-purple-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+        <nav class="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-3 z-30">
+            <button id="nav-btn-map" onclick="switchView('map')" class="text-blue-400 flex flex-col items-center text-[10px] gap-1">
+                <i data-lucide="map" class="w-5 h-5"></i> Mapa
+            </button>
+            <button id="nav-btn-routes" onclick="switchView('routes')" class="text-slate-400 flex flex-col items-center text-[10px] gap-1">
+                <i data-lucide="list" class="w-5 h-5"></i> Rutas
+            </button>
+            <button id="nav-btn-cash" onclick="switchView('cash')" class="text-slate-400 flex flex-col items-center text-[10px] gap-1">
+                <i data-lucide="dollar-sign" class="w-5 h-5"></i> Caja
+            </button>
+            <button id="nav-btn-supervisor" onclick="switchView('supervisor')" class="text-slate-400 flex flex-col items-center text-[10px] gap-1 hidden">
+                <i data-lucide="shield" class="w-5 h-5"></i> Supervisor
+            </button>
+            <button id="nav-btn-gm" onclick="switchView('gm')" class="text-purple-400 flex flex-col items-center text-[10px] gap-1 hidden">
+                <i data-lucide="cpu" class="w-5 h-5"></i> GM
+            </button>
+        </nav>
+    </div>
+
+    <!-- Modales adicionales (Crear Ruta) -->
+    <div id="modal-create-route" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl w-full max-w-sm">
+            <h3 class="font-bold text-white text-base mb-3">Crear Nueva Ruta</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-slate-400">Nombre de la Ruta</label>
+                    <input type="text" id="route-name-input" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white" value="Ruta Norte">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Punto de Partida</label>
+                    <input type="text" id="route-start-input" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white" value="Bodega Central">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Punto de Destino</label>
+                    <input type="text" id="route-end-input" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white" value="Garaje Principal">
+                </div>
+            </div>
+            <div class="flex gap-2 mt-5">
+                <button onclick="closeCreateRouteModal()" class="flex-1 bg-slate-800 text-slate-300 py-2 rounded-xl text-xs font-semibold">Cancelar</button>
+                <button onclick="confirmCreateRoute()" class="flex-1 bg-blue-600 text-white py-2 rounded-xl text-xs font-semibold">Crear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Librerías JS y archivo principal -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>

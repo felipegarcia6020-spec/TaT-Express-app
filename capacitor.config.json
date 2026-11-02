@@ -1,0 +1,14 @@
+{
+  "appId": "com.tatlogistics.express",
+  "appName": "TaT Express",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "Geolocation": {
+      "permissions": ["location"]
+    }
+  }
+}

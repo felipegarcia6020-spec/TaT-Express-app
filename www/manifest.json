@@ -1,0 +1,21 @@
+{
+  "short_name": "TaT Express",
+  "name": "TaT Logistics & Delivery App",
+  "icons": [
+    {
+      "src": "https://placehold.co/192x192/4f46e5/ffffff?text=TaT",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://placehold.co/512x512/4f46e5/ffffff?text=TaT",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "display": "standalone",
+  "orientation": "portrait"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "tat-logistics-delivery-app",
+  "version": "1.0.0",
+  "description": "Aplicación móvil para la entrega de mercancía Tienda a Tienda (TaT) con mapas interactivos, cierres de caja y monitoreo.",
+  "main": "www/index.html",
+  "scripts": {
+    "build": "mkdir -p www && cp index.html www/index.html",
+    "cap:add:android": "npm run build && npx cap add android",
+    "cap:add:ios": "npm run build && npx cap add ios",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios"
+  },
+  "keywords": [
+    "tat",
+    "logistics",
+    "leaflet",
+    "capacitor",
+    "mobile",
+    "delivery"
+  ],
+  "author": "TaT Express",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^5.7.0",
+    "@capacitor/cli": "^5.7.0",
+    "@capacitor/core": "^5.7.0",
+    "@capacitor/geolocation": "^5.0.0",
+    "@capacitor/ios": "^5.7.0"
+  }
+}
